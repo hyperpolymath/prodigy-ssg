@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Prolog CI
+
+permissions: read-all
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Install SWI-Prolog
+        run: sudo apt-get update && sudo apt-get install -y swi-prolog
+
+      - name: Syntax Check
+        run: |
+          if [ -f src/prodigy-ssg.pl ]; then
+            swipl -g 'halt' src/prodigy-ssg.pl
+          fi
+
+  language-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Verify Prolog-only in src/
+        run: |
+          echo "Checking for forbidden languages in src/..."
+          forbidden=$(find src/ -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" \) 2>/dev/null || true)
+          if [ -n "$forbidden" ]; then
+            echo "ERROR: Found forbidden language files in src/:"
+            echo "$forbidden"
+            exit 1
+          fi
+          echo "OK: Only Prolog files in src/"
