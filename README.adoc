@@ -1,66 +1,84 @@
 = prodigy-ssg
 :toc: auto
-:toclevels: 3
+:toclevels: 2
 
-**The definitive Prolog static site generator.**
+image:https://img.shields.io/badge/RSR-compliant-gold[RSR Compliant,link=https://github.com/hyperpolymath/rhodium-standard-repositories]
+image:https://img.shields.io/badge/poly--ssg-satellite-blue[poly-ssg,link=https://github.com/hyperpolymath/poly-ssg]
+image:https://img.shields.io/badge/license-AGPL--3.0-green[License]
 
-== Overview
+**Logic-based static site generator in Prolog.**
 
-prodigy-ssg is a logic-based static site generator written in Prolog.
-Site structure and content relationships are expressed as logical facts
-and rules, allowing for powerful querying and validation.
+Describe your site. Let the engine figure out the rest.
 
-== Language Enforcement
+== Who Is This For?
 
-[IMPORTANT]
-====
-This SSG **MUST** be written in Prolog. No exceptions.
+* **Prolog developers** who think in relations
+* **Logic programming enthusiasts** from any background
+* **Content architects** with complex relationship requirements
+* **Anyone tired** of imperative build scripts
 
-Forbidden languages for SSG logic:
+== Why prodigy-ssg?
 
-* Python
-* JavaScript/TypeScript
-* Datalog (use full Prolog)
-* Any language other than Prolog
+=== Declarative Site Definition
 
-The **ONLY** non-Prolog code allowed is the ReScript MCP adapter in `adapters/`.
-====
+State facts about your content and relationships. Prolog infers the structure.
+
+[source,prolog]
+----
+page(index, "Welcome").
+page(about, "About Us").
+links_to(index, about).
+% Site structure is inferred
+----
+
+=== Backtracking Builds
+
+Explore multiple build strategies automatically. The first valid solution wins.
+
+=== Pattern Matching Templates
+
+Templates are predicates. Pattern matching is native.
+
+=== Query Your Site
+
+Ask questions about your content before building.
+
+[source,prolog]
+----
+?- page(X, _), \+ linked_from(_, X).
+% Find orphan pages
+----
+
+== Quick Start
+
+[source,prolog]
+----
+:- use_module(prodigy).
+
+% Define your site
+page(index, "Home", "Welcome to my site").
+page(blog, "Blog", "My thoughts").
+template(page, "templates/page.html").
+
+% Build
+?- build_site("output/").
+----
 
 == Features
 
-* Declarative site definitions using facts
-* Automatic backtracking for template resolution
-* Built-in constraint solving for complex layouts
-* Pattern matching for content routing
-* Query interface for site metadata
+* **Relational content model** - natural for complex sites
+* **Constraint solving** - enforce content rules
+* **Incremental inference** - only rebuild what changed
+* **Meta-programming** - templates that write templates
+* **DCG for HTML** - grammars for markup
 
 == Requirements
 
-* SWI-Prolog 8.0+
-
-== Building
-
-[source,bash]
-----
-swipl -g build -t halt src/prodigy-ssg.pl
-----
-
-== Project Structure
-
-[source]
-----
-prodigy-ssg/
-├── src/                  # Prolog source (THE SSG)
-├── adapters/             # ReScript MCP adapter only
-├── STATE.scm             # Project state
-├── ECOSYSTEM.scm         # Ecosystem position
-├── META.scm              # Architecture decisions
-└── .claude/CLAUDE.md     # AI guidelines
-----
+* SWI-Prolog 8.0 or later
 
 == Part of poly-ssg
 
-prodigy-ssg is a satellite of the https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] hub.
+prodigy-ssg is part of the https://github.com/hyperpolymath/poly-ssg[poly-ssg] family, unified through https://github.com/hyperpolymath/poly-ssg-mcp[MCP integration].
 
 == License
 
