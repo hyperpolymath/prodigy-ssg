@@ -1,1 +1,67 @@
+= prodigy-ssg
+:toc: auto
+:toclevels: 3
 
+**The definitive Prolog static site generator.**
+
+== Overview
+
+prodigy-ssg is a logic-based static site generator written in Prolog.
+Site structure and content relationships are expressed as logical facts
+and rules, allowing for powerful querying and validation.
+
+== Language Enforcement
+
+[IMPORTANT]
+====
+This SSG **MUST** be written in Prolog. No exceptions.
+
+Forbidden languages for SSG logic:
+
+* Python
+* JavaScript/TypeScript
+* Datalog (use full Prolog)
+* Any language other than Prolog
+
+The **ONLY** non-Prolog code allowed is the ReScript MCP adapter in `adapters/`.
+====
+
+== Features
+
+* Declarative site definitions using facts
+* Automatic backtracking for template resolution
+* Built-in constraint solving for complex layouts
+* Pattern matching for content routing
+* Query interface for site metadata
+
+== Requirements
+
+* SWI-Prolog 8.0+
+
+== Building
+
+[source,bash]
+----
+swipl -g build -t halt src/prodigy-ssg.pl
+----
+
+== Project Structure
+
+[source]
+----
+prodigy-ssg/
+├── src/                  # Prolog source (THE SSG)
+├── adapters/             # ReScript MCP adapter only
+├── STATE.scm             # Project state
+├── ECOSYSTEM.scm         # Ecosystem position
+├── META.scm              # Architecture decisions
+└── .claude/CLAUDE.md     # AI guidelines
+----
+
+== Part of poly-ssg
+
+prodigy-ssg is a satellite of the https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] hub.
+
+== License
+
+AGPL-3.0-or-later
