@@ -4,6 +4,7 @@
 * text=auto eol=lf
 
 # Source
+*.pl    text eol=lf
 *.rs    text eol=lf diff=rust
 *.ex    text eol=lf diff=elixir
 *.exs   text eol=lf diff=elixir

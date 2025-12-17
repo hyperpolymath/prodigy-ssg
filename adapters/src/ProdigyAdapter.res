@@ -99,7 +99,7 @@ module Adapter = {
             }
           | None => "."
           }
-          let result = runCommand("swipl -g build -t halt src/prodigy-ssg.pl", ~cwd=Some(path))
+          let result = runCommand("swipl -g build -t halt src/prodigy.pl", ~cwd=Some(path))
           resolve(result)
         })
       },
@@ -111,7 +111,7 @@ module Adapter = {
         "type": "object",
         "properties": {
           "path": { "type": "string" },
-          "query": { "type": "string", "description": "Prolog query to execute" }
+          "query": { "type": "string", "description": "Prolog query (alphanumeric, underscores, parens, commas only)" }
         }
       }`),
       execute: (params) => {
@@ -124,7 +124,7 @@ module Adapter = {
             }
           | None => "."
           }
-          let query = switch Js.Json.decodeObject(params) {
+          let rawQuery = switch Js.Json.decodeObject(params) {
           | Some(obj) =>
             switch Js.Dict.get(obj, "query") {
             | Some(v) => Js.Json.decodeString(v)->Belt.Option.getWithDefault("true")
@@ -132,8 +132,24 @@ module Adapter = {
             }
           | None => "true"
           }
-          let result = runCommand(`swipl -g '${query}' -t halt src/prodigy-ssg.pl`, ~cwd=Some(path))
-          resolve(result)
+          // Security: Reject queries with shell metacharacters to prevent command injection
+          let hasShellMetachars =
+            Js.String2.includes(rawQuery, "'") ||
+            Js.String2.includes(rawQuery, "\"") ||
+            Js.String2.includes(rawQuery, "`") ||
+            Js.String2.includes(rawQuery, "$") ||
+            Js.String2.includes(rawQuery, ";") ||
+            Js.String2.includes(rawQuery, "|") ||
+            Js.String2.includes(rawQuery, "&") ||
+            Js.String2.includes(rawQuery, ">") ||
+            Js.String2.includes(rawQuery, "<") ||
+            Js.String2.includes(rawQuery, "\\")
+          if hasShellMetachars {
+            resolve({success: false, stdout: "", stderr: "Invalid query: contains disallowed shell characters", code: 1})
+          } else {
+            let result = runCommand(`swipl -g '${rawQuery}' -t halt src/prodigy.pl`, ~cwd=Some(path))
+            resolve(result)
+          }
         })
       },
     },

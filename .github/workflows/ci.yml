@@ -21,8 +21,8 @@ jobs:
 
       - name: Syntax Check
         run: |
-          if [ -f src/prodigy-ssg.pl ]; then
-            swipl -g 'halt' src/prodigy-ssg.pl
+          if [ -f src/prodigy.pl ]; then
+            swipl -g 'halt' src/prodigy.pl
           fi
 
   language-check:

@@ -3,8 +3,8 @@
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 
 (define metadata
-  '((version . "1.0.0")
-    (updated . "2025-12-16")
+  '((version . "1.0.1")
+    (updated . "2025-12-17")
     (project . "prodigy-ssg")
     (required-language . "Prolog")))
 
@@ -17,21 +17,27 @@
     (enforcement . "strict")))
 
 (define current-position
-  '((phase . "v1.0 - Prolog Implementation Complete")
-    (overall-completion . 100)
+  '((phase . "v1.0 - Core Complete, MCP Adapter Ready")
+    (overall-completion . 85)
     (components ((Prolog-engine ((status . "complete") (completion . 100)))
-                 (mcp-adapter ((status . "pending") (language . "ReScript") (completion . 0)))))))
+                 (mcp-adapter ((status . "implemented") (language . "ReScript") (completion . 90)))
+                 (security ((status . "reviewed") (completion . 100)))))))
 
 (define blockers-and-issues
   '((critical ())
-    (high-priority ())))
+    (high-priority (("Test in production environment" . pending)))))
 
 (define critical-next-actions
-  '((immediate (("Connect MCP adapter in ReScript" . high)))))
+  '((immediate (("Publish to npm for MCP adapter" . high)
+                ("Add integration tests" . medium)))
+    (short-term (("Expand markdown parser features" . medium)
+                 ("Add YAML frontmatter support" . medium)))
+    (long-term (("Plugin system" . low)
+                ("Live reload development server" . low)))))
 
 (define state-summary
   '((project . "prodigy-ssg")
     (language . "Prolog")
-    (completion . 100)
+    (completion . 85)
     (blockers . 0)
-    (updated . "2025-12-16")))
+    (updated . "2025-12-17")))
