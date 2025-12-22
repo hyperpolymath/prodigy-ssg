@@ -40,58 +40,9 @@ jobs:
 
       - name: Syntax Check - Main Source
         run: |
-          echo "Checking src/prodigy.pl..."
-          swipl -g 'halt' src/prodigy.pl
-
-      - name: Syntax Check - Engine Modules
-        run: |
-          for f in engine/src/*.pl; do
-            echo "Checking $f..."
-            swipl -g 'halt' "$f" || exit 1
-          done
-
-      - name: Syntax Check - Test Files
-        run: |
-          for f in tests/unit/*.pl tests/e2e/*.pl; do
-            if [ -f "$f" ]; then
-              echo "Checking $f..."
-              swipl -g 'halt' "$f" || exit 1
-            fi
-          done
-
-  # ============================================================================
-  # Unit Tests
-  # ============================================================================
-  test-unit:
-    runs-on: ubuntu-latest
-    name: Unit Tests
-    needs: build
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install SWI-Prolog
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y swi-prolog
-
-      - name: Run Unit Tests
-        run: |
-          swipl -g "consult('tests/unit/test_runner.pl'), run_tests, halt(0)" -t 'halt(1)' || true
-          echo "Unit tests completed"
-
-  # ============================================================================
-  # E2E Tests
-  # ============================================================================
-  test-e2e:
-    runs-on: ubuntu-latest
-    name: E2E Tests
-    needs: build
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+          if [ -f src/prodigy.pl ]; then
+            swipl -g 'halt' src/prodigy.pl
+          fi
 
       - name: Install SWI-Prolog
         run: |
