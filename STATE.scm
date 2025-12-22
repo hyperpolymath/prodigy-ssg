@@ -1,20 +1,40 @@
 ;;; STATE.scm — prodigy-ssg
+;;; Project Checkpoint and AI Conversation Context
 ;; SPDX-License-Identifier: AGPL-3.0-or-later
 ;; SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+;;;============================================================================
+;;; METADATA
+;;;============================================================================
 
 (define metadata
   '((version . "1.0.1")
     (updated . "2025-12-17")
     (project . "prodigy-ssg")
-    (required-language . "Prolog")))
+    (repo . "github.com/hyperpolymath/prodigy-ssg")))
 
-(define language-enforcement
-  '((primary-language . "Prolog")
-    (file-extension . ".pl")
-    (interpreter . "SWI-Prolog")
-    (forbidden-languages . ("Python" "JavaScript" "TypeScript" "Ruby" "Go"))
-    (rationale . "prodigy-ssg is the DEFINITIVE Prolog static site generator. It MUST be written entirely in Prolog. No other implementation languages are permitted.")
-    (enforcement . "strict")))
+;;;============================================================================
+;;; PROJECT CONTEXT
+;;;============================================================================
+
+(define project-context
+  '((name . "prodigy-ssg")
+    (tagline . "Logic-based static site generator in Prolog")
+    (version . "1.1.0")
+    (license . "AGPL-3.0-or-later")
+    (rsr-compliance . "gold-target")
+    (language . "Prolog")
+
+    (tech-stack
+     ((primary . "Prolog (SWI-Prolog 8.0+)")
+      (adapter . "ReScript")
+      (config . "Nickel")
+      (ci-cd . "GitHub Actions")
+      (security . "CodeQL + Dependabot")))))
+
+;;;============================================================================
+;;; CURRENT POSITION - 44/44 Components
+;;;============================================================================
 
 (define current-position
   '((phase . "v1.0 - Core Complete, MCP Adapter Ready")
