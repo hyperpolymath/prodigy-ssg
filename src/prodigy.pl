@@ -149,19 +149,181 @@ test_full :-
     writeln(Html).
 
 % ============================================================================
+% File System Operations
+% ============================================================================
+
+% Site configuration
+site_config(content_dir, 'content').
+site_config(output_dir, 'public').
+site_config(template_dir, 'templates').
+site_config(static_dir, 'static').
+
+% Ensure directory exists
+ensure_dir(Dir) :-
+    ( exists_directory(Dir) -> true ; make_directory_path(Dir) ).
+
+% Read file contents
+read_file_content(Path, Content) :-
+    read_file_to_string(Path, Content, []).
+
+% Write file contents
+write_file_content(Path, Content) :-
+    file_directory_name(Path, Dir),
+    ensure_dir(Dir),
+    open(Path, write, Stream),
+    write(Stream, Content),
+    close(Stream).
+
+% List files in directory
+list_md_files(Dir, Files) :-
+    exists_directory(Dir),
+    directory_files(Dir, AllFiles),
+    include(is_md_file, AllFiles, Files).
+
+is_md_file(File) :-
+    atom_concat(_, '.md', File),
+    File \= '.',
+    File \= '..'.
+
+% ============================================================================
+% Build Command
+% ============================================================================
+
+build_site :-
+    writeln('Building site...'),
+    site_config(content_dir, ContentDir),
+    site_config(output_dir, OutputDir),
+    ensure_dir(OutputDir),
+    ( exists_directory(ContentDir) ->
+        list_md_files(ContentDir, MdFiles),
+        build_files(ContentDir, OutputDir, MdFiles, Count),
+        copy_static_files(StaticCount),
+        format('~nBuild complete: ~d pages, ~d static files~n', [Count, StaticCount])
+    ;
+        format('No content directory found. Creating ~w/~n', [ContentDir]),
+        ensure_dir(ContentDir)
+    ).
+
+build_files(_, _, [], 0).
+build_files(ContentDir, OutputDir, [File|Rest], Count) :-
+    atomic_list_concat([ContentDir, '/', File], SrcPath),
+    read_file_content(SrcPath, Content),
+    % Parse and convert
+    parse_markdown(Content, Html),
+    apply_template(fm('Untitled', '', [], false), Html, Output),
+    % Output path
+    atom_concat(BaseName, '.md', File),
+    atom_concat(BaseName, '.html', OutFile),
+    atomic_list_concat([OutputDir, '/', OutFile], OutPath),
+    write_file_content(OutPath, Output),
+    format('  ~w -> ~w~n', [File, OutPath]),
+    build_files(ContentDir, OutputDir, Rest, RestCount),
+    Count is RestCount + 1.
+
+copy_static_files(0) :-
+    site_config(static_dir, StaticDir),
+    \+ exists_directory(StaticDir), !.
+copy_static_files(Count) :-
+    site_config(static_dir, StaticDir),
+    site_config(output_dir, OutputDir),
+    directory_files(StaticDir, AllFiles),
+    include(is_regular_file_name, AllFiles, Files),
+    copy_files(StaticDir, OutputDir, Files, Count).
+
+is_regular_file_name(F) :- F \= '.', F \= '..'.
+
+copy_files(_, _, [], 0).
+copy_files(SrcDir, DstDir, [File|Rest], Count) :-
+    atomic_list_concat([SrcDir, '/', File], Src),
+    atomic_list_concat([DstDir, '/', File], Dst),
+    copy_file(Src, Dst),
+    copy_files(SrcDir, DstDir, Rest, RestCount),
+    Count is RestCount + 1.
+
+% ============================================================================
+% Init Command
+% ============================================================================
+
+init_site(Name) :-
+    format('Initializing new site: ~w~n', [Name]),
+    % Create directories
+    atomic_list_concat([Name, '/content'], ContentDir),
+    atomic_list_concat([Name, '/templates'], TemplateDir),
+    atomic_list_concat([Name, '/static'], StaticDir),
+    atomic_list_concat([Name, '/public'], PublicDir),
+    ensure_dir(ContentDir),
+    ensure_dir(TemplateDir),
+    ensure_dir(StaticDir),
+    ensure_dir(PublicDir),
+    format('  Created ~w/~n', [ContentDir]),
+    format('  Created ~w/~n', [TemplateDir]),
+    format('  Created ~w/~n', [StaticDir]),
+    format('  Created ~w/~n', [PublicDir]),
+    % Create sample content
+    atomic_list_concat([ContentDir, '/index.md'], IndexPath),
+    SampleContent = '---\ntitle: Welcome to Prodigy\ndate: 2025-01-18\n---\n\n# Welcome\n\nThis is your first post built with **Prodigy SSG**.\n\n## Features\n\n- Logic-based site definitions\n- DCG for parsing\n- Backtracking for flexible matching\n',
+    write_file_content(IndexPath, SampleContent),
+    writeln('  Created sample content'),
+    format('~nSite initialized! Run prodigy-ssg build in ~w/ to build.~n', [Name]).
+
+% ============================================================================
+% Clean Command
+% ============================================================================
+
+clean_site :-
+    site_config(output_dir, OutputDir),
+    format('Cleaning ~w/...~n', [OutputDir]),
+    ( exists_directory(OutputDir) ->
+        delete_directory_and_contents(OutputDir)
+    ; true
+    ),
+    writeln('Clean complete.').
+
+% ============================================================================
+% Help
+% ============================================================================
+
+print_usage :-
+    writeln('Prodigy SSG - Prolog-powered static site generator'),
+    nl,
+    writeln('USAGE:'),
+    writeln('  prodigy-ssg <command> [options]'),
+    nl,
+    writeln('COMMANDS:'),
+    writeln('  build              Build the site'),
+    writeln('  init <name>        Create a new site'),
+    writeln('  clean              Remove generated files'),
+    writeln('  test-markdown      Test markdown parser'),
+    writeln('  test-frontmatter   Test frontmatter parser'),
+    writeln('  test-full          Test full pipeline'),
+    nl,
+    writeln('OPTIONS:'),
+    writeln('  -h, --help         Show this help'),
+    nl,
+    writeln('EXAMPLES:'),
+    writeln('  prodigy-ssg init my-blog'),
+    writeln('  cd my-blog && prodigy-ssg build').
+
+% ============================================================================
 % Main
 % ============================================================================
 
 main :-
     current_prolog_flag(argv, Args),
-    ( Args = [test-markdown|_] -> test_markdown
+    ( Args = [build|_] -> build_site
+    ; Args = [init, Name|_] -> init_site(Name)
+    ; Args = [init|_] -> writeln('Error: init requires a site name'), writeln('Usage: prodigy-ssg init <name>')
+    ; Args = [clean|_] -> clean_site
+    ; Args = [test-markdown|_] -> test_markdown
     ; Args = [test-frontmatter|_] -> test_frontmatter
     ; Args = [test-full|_] -> test_full
     ; Args = ['test-markdown'|_] -> test_markdown
     ; Args = ['test-frontmatter'|_] -> test_frontmatter
     ; Args = ['test-full'|_] -> test_full
-    ; writeln('Prodigy SSG - Prolog powered'),
-      writeln('Commands: test-markdown test-frontmatter test-full')
+    ; Args = ['-h'|_] -> print_usage
+    ; Args = ['--help'|_] -> print_usage
+    ; Args = [] -> print_usage
+    ; Args = [Cmd|_] -> format('Unknown command: ~w~n', [Cmd]), writeln('Run prodigy-ssg --help for usage.')
     ),
     halt.
 
